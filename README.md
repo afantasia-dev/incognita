@@ -12,7 +12,7 @@ ejemplo de uso :
 * tiro un dado , sale 5:  5-1=4 anoto un 4 para la segunda casilla.
 * tiro el segundo dado, sale un 1: 1-1=0 anoto un 0
 * el primer argumento es 40 base 6= (4x6)+(0x1)=24
-* tiro un dado , sale 5:  6-1=5 anoto un 5 para la segunda casilla.
+* tiro un dado , sale 6:  6-1=5 anoto un 5 para la segunda casilla.
 * tiro el segundo dado, sale un 6: 6-1=5 anoto un 5
 * el primer argumento es 55 base 6= (5x6)+(5x1)=35
 * ejecuto en la terminal: ./cypher2.exe 24 35
@@ -26,4 +26,5 @@ ejemplo de uso :
 * que funcione bien
 * agregar para cambiar cyphertext a text otra vez (./cypher2.exe 24 35 'AWTF...' -> 'ABCD...' )
 * que funcione bonito
+* pruevas unitarias
 * interfaz grafica
