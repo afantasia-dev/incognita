@@ -24,6 +24,7 @@ ejemplo de uso :
 * ejecutar la sustitución en orden de barril -> b1,b2,b3,mirror,b3,b2,b1
 * agregar sustitución por letra en especifico
 * que funcione bien
+* estandarizar los nombres de variables y funciones aalgo que no este idiota
 * agregar para cambiar cyphertext a text otra vez (./cypher2.exe 24 35 'AWTF...' -> 'ABCD...' )
 * Que funcione bonito
 * pruebas unitarias
