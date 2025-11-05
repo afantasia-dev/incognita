@@ -1,0 +1,19 @@
+{
+  "name": "incognita",
+  "version": "1.0.0",
+  "description": "scripts y cosas para filosofar sobre cifradores enigma y esas cosas (son más notas que cosas funcionales)",
+  "main": "index.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^2.2.0",
+    "csv-writer": "^1.6.0",
+    "express": "^5.1.0"
+  }
+}
