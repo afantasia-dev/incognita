@@ -216,6 +216,10 @@ app.post('/submit/:filename', async (req, res) => {
     };
     
     // Check if file exists to determine if we should append or create new
+    // Note: There's a small race condition between checking file existence and writing.
+    // In high-concurrency scenarios, headers might be written twice if multiple requests
+    // create the same file simultaneously. This is acceptable for this use case, but could
+    // be resolved with file locking if needed.
     const fileExists = fs.existsSync(csvFilePath);
     
     // Prepare CSV writer configuration

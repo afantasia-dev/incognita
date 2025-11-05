@@ -98,9 +98,9 @@ Timestamp,nombre,email,telefono,mensaje
 
 ## Dependencias
 
-- **express**: Framework web para Node.js
-- **body-parser**: Middleware para parsear datos del formulario
+- **express**: Framework web para Node.js (incluye middleware de parseo de datos)
 - **csv-writer**: Librería para escribir archivos CSV
+- **express-rate-limit**: Middleware para limitar el número de solicitudes
 
 ## Variables de Entorno
 
