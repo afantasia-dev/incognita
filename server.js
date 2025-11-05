@@ -1,5 +1,4 @@
 const express = require('express');
-const bodyParser = require('body-parser');
 const { createObjectCsvWriter } = require('csv-writer');
 const fs = require('fs');
 const path = require('path');
@@ -15,9 +14,9 @@ const limiter = rateLimit({
   message: 'Demasiadas solicitudes desde esta IP, por favor intente más tarde.'
 });
 
-// Middleware
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(bodyParser.json());
+// Middleware - use built-in Express body parsers (available since Express 4.16+)
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
 app.use('/submit', limiter);
 
 // Helper function to escape HTML to prevent XSS
@@ -216,7 +215,7 @@ app.post('/submit/:filename', async (req, res) => {
       ...formData
     };
     
-    // Check if file exists to determine headers
+    // Check if file exists to determine if we should append or create new
     const fileExists = fs.existsSync(csvFilePath);
     
     // Prepare CSV writer configuration
@@ -225,6 +224,8 @@ app.post('/submit/:filename', async (req, res) => {
       ...fieldNames.map(name => ({ id: name, title: name }))
     ];
     
+    // Create CSV writer - headers are only written when file doesn't exist
+    // When append is true, csv-writer skips header writing
     const csvWriter = createObjectCsvWriter({
       path: csvFilePath,
       header: headers,
