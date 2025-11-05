@@ -3,13 +3,34 @@ const bodyParser = require('body-parser');
 const { createObjectCsvWriter } = require('csv-writer');
 const fs = require('fs');
 const path = require('path');
+const rateLimit = require('express-rate-limit');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Rate limiting middleware to prevent abuse
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // Limit each IP to 100 requests per windowMs
+  message: 'Demasiadas solicitudes desde esta IP, por favor intente más tarde.'
+});
+
 // Middleware
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
+app.use('/submit', limiter);
+
+// Helper function to escape HTML to prevent XSS
+function escapeHtml(text) {
+  const map = {
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#039;'
+  };
+  return String(text).replace(/[&<>"']/g, (m) => map[m]);
+}
 
 // Ensure CSV directory exists
 const csvDir = path.join(__dirname, 'csv_data');
@@ -125,9 +146,48 @@ app.post('/submit/:filename', async (req, res) => {
     const filename = req.params.filename;
     const formData = req.body;
     
-    // Sanitize filename to prevent path traversal
+    // Sanitize filename to prevent path traversal - only allow alphanumeric, underscore, and hyphen
     const sanitizedFilename = filename.replace(/[^a-zA-Z0-9_-]/g, '_');
+    
+    // Additional validation: ensure the filename is not empty and doesn't start with a dot
+    if (!sanitizedFilename || sanitizedFilename.startsWith('.')) {
+      return res.status(400).send(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="UTF-8">
+          <title>Error</title>
+        </head>
+        <body>
+          <h1>Error</h1>
+          <p>Nombre de archivo inválido.</p>
+          <a href="/">Volver al formulario</a>
+        </body>
+        </html>
+      `);
+    }
+    
     const csvFilePath = path.join(csvDir, `${sanitizedFilename}.csv`);
+    
+    // Ensure the resolved path is still within csvDir to prevent path traversal
+    const resolvedPath = path.resolve(csvFilePath);
+    const resolvedCsvDir = path.resolve(csvDir);
+    if (!resolvedPath.startsWith(resolvedCsvDir)) {
+      return res.status(400).send(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="UTF-8">
+          <title>Error</title>
+        </head>
+        <body>
+          <h1>Error</h1>
+          <p>Ruta de archivo inválida.</p>
+          <a href="/">Volver al formulario</a>
+        </body>
+        </html>
+      `);
+    }
     
     // Get all form field names
     const fieldNames = Object.keys(formData);
@@ -176,7 +236,7 @@ app.post('/submit/:filename', async (req, res) => {
     
     console.log(`Datos guardados en: ${csvFilePath}`);
     
-    // Send success response
+    // Send success response with escaped HTML
     res.send(`
       <!DOCTYPE html>
       <html lang="es">
@@ -219,10 +279,10 @@ app.post('/submit/:filename', async (req, res) => {
       <body>
         <div class="success">
           <h1>✓ Datos Guardados Exitosamente</h1>
-          <p>Los datos se han guardado en: <strong>${sanitizedFilename}.csv</strong></p>
+          <p>Los datos se han guardado en: <strong>${escapeHtml(sanitizedFilename)}.csv</strong></p>
           <div class="data">
             <h3>Datos recibidos:</h3>
-            <pre>${JSON.stringify(formData, null, 2)}</pre>
+            <pre>${escapeHtml(JSON.stringify(formData, null, 2))}</pre>
           </div>
         </div>
         <a href="/">← Volver al formulario</a>
@@ -241,7 +301,7 @@ app.post('/submit/:filename', async (req, res) => {
       </head>
       <body>
         <h1>Error al guardar datos</h1>
-        <p>${error.message}</p>
+        <p>${escapeHtml(error.message)}</p>
         <a href="/">Volver al formulario</a>
       </body>
       </html>
